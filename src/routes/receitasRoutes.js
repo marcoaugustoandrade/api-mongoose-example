@@ -4,10 +4,10 @@ import receitasController from '../controllers/receitasController.js';
 const receitasRoutes = express.Router();
 
 receitasRoutes
-  .get('/receitas', receitasController.listarReceitas)
-  .get('/receitas/:id', receitasController.listarReceitaPorId)
-  .post('/receitas', receitasController.criarReceita)
-  .put('/receitas/:id', receitasController.atualizarReceita)
-  .delete('/receitas/:id', receitasController.deletarReceita);
+  .get('/receitas', receitasController.listar)
+  .get('/receitas/:id', receitasController.listarPorId)
+  .post('/receitas', receitasController.criar)
+  .put('/receitas/:id', receitasController.atualizar)
+  .delete('/receitas/:id', receitasController.deletar);
 
 export default receitasRoutes;

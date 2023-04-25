@@ -1,85 +1,114 @@
 import Receita from '../models/Receita.js';
 
-//ToDo: upload de imagem
+//ToDo: rota para upload de imagem
 
-const listarReceitas = async (req, res) => {
+
+const listar = async (req, res, next) => {
 
   try {
-    const receitas = await Receita.find();
-    res.json(receitas);
+    
+    const { titulo, pagina = 1, itensPorPagina = 10 } = req.query;
+    
+    const filtro = titulo ? { titulo: { $regex: new RegExp(titulo), $options: 'i' } } : {};
+    
+    const totalItens = await Receita.countDocuments(filtro);
+    
+    const receitas = await Receita.find(filtro)
+      .skip((pagina - 1) * itensPorPagina)
+      .limit(itensPorPagina);
+    
+    const totalPaginas = Math.ceil(totalItens / itensPorPagina);
+    
+    res.status(200);
+    res.send({
+      totalItens,
+      totalPaginas,
+      paginaAtual: pagina,
+      itensPorPagina,
+      receitas
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 }
 
-const listarReceitaPorId = async (req, res) => {
+const listarPorId = async (req, res, next) => {
   
   try {
+    
     const receita = await Receita.findById(req.params.id);
-    res.json(receita);
+    res.status(200);
+    res.send(receita);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 }
 
-const criarReceita = async (req, res) => {
+const criar = async (req, res, next) => {
   
   try {
+    
     const { titulo, tempoPreparo, porcoes, imagem } = req.body;
+    
     const novaReceita = new Receita({
       titulo,
       tempoPreparo,
       porcoes,
       imagem
     });
+    
     const receitaSalva = await novaReceita.save();
-    res.status(201).json(receitaSalva);
+    
+    res.status(201);
+    res.send(receitaSalva);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 }
 
-const atualizarReceita = async (req, res) => {
+const atualizar = async (req, res, next) => {
+  
+  try { 
+    
+    const receitaAtualizada = await Receita.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    
+    if (!receitaAtualizada) {
+      return res.status(404).send({ message: 'Receita não encontrada' });
+    }
+
+    res.status(200);
+    res.send(receitaAtualizada);
+  } catch (err) {
+    next(err);
+  }
+}
+
+const deletar = async (req, res, next) => {
   
   try {
     
-    const receita = await Receita.findById(req.params.id);
-    if (!receita) {
-      return res.status(404).json({ message: 'Receita não encontrada' });
+    const receitaDeletada = await Receita.findByIdAndDelete(req.params.id);
+    
+    if (!receitaDeletada) {
+      return res.status(404).send({ message: 'Receita não encontrada' });
     }
-
-    // Atualiza a receita com os valores do corpo da requisição
-    receita.titulo = req.body.titulo || receita.titulo;
-    receita.tempoPreparo = req.body.tempoPreparo || receita.tempoPreparo;
-    receita.porcoes = req.body.porcoes || receita.porcoes;
-    receita.imagem = req.body.imagem || receita.imagem;
-
-    // Salva a receita atualizada no banco de dados
-    const receitaAtualizada = await receita.save();
-
-    res.json(receitaAtualizada);
+    
+    res.status(200);
+    res.send(receitaDeletada);
   } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-}
-
-const deletarReceita = async (req, res) => {
-  
-  try {
-    const receita = await Receita.findById(req.params.id);
-    await receita.remove();
-    res.json({ message: 'Receita excluída com sucesso' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 }
 
 const receitasController = {
-  listarReceitas,
-  listarReceitaPorId,
-  criarReceita,
-  atualizarReceita,
-  deletarReceita
+  listar,
+  listarPorId,
+  criar,
+  atualizar,
+  deletar
 }
 
 export default receitasController;

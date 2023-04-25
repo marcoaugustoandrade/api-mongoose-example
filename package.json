@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js",
-    "seed": "node src/seeds/populate.js"
+    "seeds": "node src/seeds/populate.js"
   },
   "keywords": [],
   "author": "",

@@ -1,4 +1,8 @@
+import handleNotFound from '../middlewares/handleNotFound.js';
+import handleError from '../middlewares/handleError.js';
+import handleValidationError from '../middlewares/handleValidationError.js';
 import receitasRoutes from './receitasRoutes.js';
+import comentariosRoutes from './comentariosRoutes.js';
 
 const routes = (app) => {
 
@@ -6,9 +10,15 @@ const routes = (app) => {
     res.send('pong');
   });
 
+  
   app.use(
-    receitasRoutes
+    receitasRoutes,
+    comentariosRoutes
   );
+
+  app.use(handleNotFound);
+  app.use(handleValidationError);
+  app.use(handleError);
 }
 
 export default routes;

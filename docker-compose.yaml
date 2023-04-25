@@ -1,9 +1,22 @@
 version: '3.3'
 services:
+  mongo-express:
+    image: mongo-express
+    ports:
+      - 8081:8081
+    restart: always
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: marco
+      ME_CONFIG_BASICAUTH_PASSWORD: 102030Fs
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_SERVER: container-mongodb1
+    networks:
+      - mongo-compose-network
+
   mongodb:
     image: mongo:latest
     restart: always
-    container_name: container-mongodb
+    container_name: container-mongodb1
     environment:
     - MONGO_DATA_DIR=./data/db
     - MONGO_LOG_DIR=./log
@@ -11,3 +24,9 @@ services:
       - "27017:27017"
     volumes:
       - ./data_mongodb/db:/data/db
+    networks:
+      - mongo-compose-network
+
+networks: 
+    mongo-compose-network:
+      driver: bridge
